@@ -24,3 +24,7 @@ Desktop.ini
 .idea/
 *.sublime-project
 *.sublime-workspace
+
+/app/config/database.local.php
+
+app/config/obe.local.php

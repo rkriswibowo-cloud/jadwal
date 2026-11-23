@@ -1,5 +1,8 @@
 RewriteEngine On
 
+RewriteRule ^(?:app|database|routes|scratch|storage|\.git)(?:/|$) - [F,L,NC]
+RewriteRule \.sql$ - [F,L,NC]
+
 # Jadikan public sebagai web root meski proyek dibuka dari folder utama.
 RewriteRule ^public/ - [L]
 RewriteRule ^$ public/ [L]

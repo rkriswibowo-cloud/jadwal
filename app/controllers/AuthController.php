@@ -16,14 +16,10 @@ class AuthController extends Controller
         $userModel = new User();
         $user = $userModel->findByIdentifier($identifier) ?: $userModel->findByEmail($identifier);
         
-        if ($user && password_verify($password, $user['password'])) {
-            $_SESSION['user'] = [
-                'id' => $user['id'],
-                'name' => $user['name'],
-                'email' => $user['email'],
-                'role' => $user['role'],
-                'prodi_id' => $user['prodi_id'],
-            ];
+        if ($user && $user['status'] === 'aktif' && password_verify($password, $user['password'])) {
+            session_regenerate_id(true);
+            unset($_SESSION['account_csrf']);
+            $_SESSION['user'] = User::sessionData($user);
             redirect('dashboard');
         }
         flash('error', 'Username atau password salah.');

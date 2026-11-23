@@ -1,0 +1,11 @@
+.git
+.env
+.env.*
+app/config/database.local.php
+database
+*.sql
+scratch
+storage
+public/sso-callback.php
+
+app/config/obe.local.php

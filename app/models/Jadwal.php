@@ -413,7 +413,8 @@ class Jadwal extends Model
 
     public function academicYears(): array
     {
-        $stmt = $this->db->query('SELECT DISTINCT tahun_akademik FROM jadwal ORDER BY tahun_akademik DESC');
+        $stmt = $this->db->query('SELECT CONVERT(tahun_akademik USING utf8mb4) COLLATE utf8mb4_general_ci AS tahun_akademik
+            FROM jadwal UNION SELECT academic_year COLLATE utf8mb4_general_ci FROM academic_periods ORDER BY tahun_akademik DESC');
         return array_column($stmt->fetchAll(), 'tahun_akademik');
     }
 

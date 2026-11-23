@@ -1,0 +1,96 @@
+# Untuk Web editor Portainer. Siapkan image jadwal-app:local di menu Images sebelum deploy.
+x-app: &app
+  image: jadwal-app:local
+  pull_policy: never
+
+x-db-connection: &db-connection
+  DB_HOST: db
+  DB_DATABASE: db_penjadwalan_ruang
+  DB_USERNAME: jadwal
+  DB_PASSWORD: ${JADWAL_DB_PASSWORD:?Isi JADWAL_DB_PASSWORD di .env}
+
+services:
+  db:
+    image: mariadb:11.8
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: db_penjadwalan_ruang
+      MARIADB_USER: jadwal
+      MARIADB_PASSWORD: ${JADWAL_DB_PASSWORD:?Isi JADWAL_DB_PASSWORD di .env}
+      MARIADB_ROOT_PASSWORD: ${JADWAL_DB_ROOT_PASSWORD:?Isi JADWAL_DB_ROOT_PASSWORD di .env}
+    volumes:
+      - database:/var/lib/mysql
+      - type: bind
+        source: ${JADWAL_SOURCE_DIR:-/var/www/html/jadwal}/database/db_penjadwalan_ruang.sql
+        target: /docker-entrypoint-initdb.d/10-jadwal.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${JADWAL_SOURCE_DIR:-/var/www/html/jadwal}/docker/remove-demo-accounts.sql
+        target: /docker-entrypoint-initdb.d/20-remove-demo-accounts.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${JADWAL_SOURCE_DIR:-/var/www/html/jadwal}/database/academic_periods.sql
+        target: /docker-entrypoint-initdb.d/30-academic-periods.sql
+        read_only: true
+        bind:
+          create_host_path: false
+    networks: [database]
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  setup:
+    <<: *app
+    command: ["php", "docker/bootstrap-admin.php"]
+    environment:
+      <<: *db-connection
+      JADWAL_ADMIN_EMAIL: ${JADWAL_ADMIN_EMAIL:-}
+      JADWAL_ADMIN_PASSWORD: ${JADWAL_ADMIN_PASSWORD:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [database]
+
+  web:
+    <<: *app
+    restart: unless-stopped
+    environment:
+      <<: *db-connection
+      APP_COOKIE_SECURE: ${JADWAL_COOKIE_SECURE:-1}
+    volumes:
+      - type: bind
+        source: ${JADWAL_SOURCE_DIR:-/var/www/html/jadwal}/app/config/obe.local.php
+        target: /run/jadwal/obe.php
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /run/mysqld
+        target: /run/mysqld
+        read_only: true
+        bind:
+          create_host_path: false
+    ports:
+      - "127.0.0.1:${JADWAL_HTTP_PORT:-8093}:80"
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(@file_get_contents('http://127.0.0.1/') === false ? 1 : 0);"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+    networks: [database]
+
+networks:
+  database:
+
+volumes:
+  database:

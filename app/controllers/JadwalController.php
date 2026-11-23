@@ -49,19 +49,40 @@ class JadwalController extends Controller
             'dosen' => (new Dosen())->activeOptions(),
             'days' => academic_days(),
             'scheduleGrid' => $jadwal->allDetail(),
+            'periods' => (new AcademicPeriod())->catalog(),
         ]);
     }
 
     public function store(): void
     {
         AuthMiddleware::requireRole(['admin', 'operator_prodi']);
-        $this->runAction(fn() => (new Jadwal())->create($_POST), 'Jadwal berhasil ditambahkan.', 'jadwal');
+        $this->runAction(fn() => (new Jadwal())->create($this->withAcademicPeriod($_POST)), 'Jadwal berhasil ditambahkan.', 'jadwal');
     }
 
     public function update(): void
     {
         AuthMiddleware::requireRole(['admin', 'operator_prodi']);
-        $this->runAction(fn() => (new Jadwal())->update((int) $_POST['id'], $_POST), 'Jadwal berhasil diubah.', 'jadwal');
+        $this->runAction(fn() => (new Jadwal())->update((int) $_POST['id'], $this->withAcademicPeriod($_POST)), 'Jadwal berhasil diubah.', 'jadwal');
+    }
+
+    private function withAcademicPeriod(array $data): array
+    {
+        $periods = (new AcademicPeriod())->catalog();
+        if (!$periods || !$periods[0]['is_active']) {
+            return $data;
+        }
+        $selection = $data['academic_period'] ?? null;
+        if ($selection === null && is_string($data['tahun_akademik'] ?? null) && is_string($data['semester_akademik'] ?? null)) {
+            $selection = $data['tahun_akademik'] . ' ' . $data['semester_akademik'];
+        }
+        foreach ($periods as $period) {
+            if ($selection === $period['academic_year'] . ' ' . $period['semester']) {
+                $data['tahun_akademik'] = $period['academic_year'];
+                $data['semester_akademik'] = $period['semester'];
+                return $data;
+            }
+        }
+        throw new RuntimeException('Pilih periode akademik yang tersedia.');
     }
 
     public function delete(): void

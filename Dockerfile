@@ -1,0 +1,19 @@
+FROM php:8.4-apache-bookworm
+
+RUN set -eux; \
+    docker-php-ext-install pdo_mysql; \
+    if ! php -m | grep -qi '^mbstring$'; then \
+        apt-get update; \
+        apt-get install -y --no-install-recommends libonig-dev; \
+        docker-php-ext-install mbstring; \
+        rm -rf /var/lib/apt/lists/*; \
+    fi; \
+    a2enmod rewrite; \
+    mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+
+WORKDIR /var/www/html
+COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
+COPY app/ app/
+COPY routes/ routes/
+COPY public/ public/
+COPY docker/bootstrap-admin.php docker/bootstrap-admin.php

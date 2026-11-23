@@ -57,3 +57,16 @@ $router->post('jadwal/store', [JadwalController::class, 'store']);
 $router->get('jadwal/edit', [JadwalController::class, 'edit']);
 $router->post('jadwal/update', [JadwalController::class, 'update']);
 $router->get('jadwal/delete', [JadwalController::class, 'delete']);
+
+$router->get('pengguna', [PenggunaController::class, 'index']);
+$router->get('pengguna/create', [PenggunaController::class, 'create']);
+$router->post('pengguna/store', [PenggunaController::class, 'store']);
+$router->get('pengguna/edit', [PenggunaController::class, 'edit']);
+$router->post('pengguna/update', [PenggunaController::class, 'update']);
+$router->post('pengguna/delete', [PenggunaController::class, 'delete']);
+
+$router->get('profil', [ProfilController::class, 'index']);
+$router->post('profil/update', [ProfilController::class, 'update']);
+
+$router->get('periode-akademik', [AcademicPeriodController::class, 'index']);
+$router->post('periode-akademik/sinkronkan', [AcademicPeriodController::class, 'sync']);

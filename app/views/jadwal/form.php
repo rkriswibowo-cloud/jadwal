@@ -94,20 +94,33 @@ $schedulePayload = array_map(static function (array $row): array {
                 </div>
 
                 <div>
-                    <label class="form-label">
-                        <span><i class="fa-solid fa-layer-group mr-1 text-primary"></i> Semester</span>
+                    <label for="academic-period" class="form-label">
+                        <span><i class="fa-regular fa-calendar mr-1 text-primary"></i> Tahun Akademik &amp; Semester</span>
                     </label>
-                    <select name="semester_akademik" class="form-control" style="height: 42px;">
-                        <option value="Ganjil" <?= (($item['semester_akademik'] ?? '') === 'Ganjil') ? 'selected' : '' ?>>Ganjil</option>
-                        <option value="Genap" <?= (($item['semester_akademik'] ?? '') === 'Genap') ? 'selected' : '' ?>>Genap</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="form-label">
-                        <span><i class="fa-regular fa-calendar mr-1 text-primary"></i> Tahun Akademik</span>
-                    </label>
-                    <input name="tahun_akademik" class="form-control" value="<?= e($item['tahun_akademik'] ?? '2025/2026') ?>" placeholder="2025/2026" style="height: 42px;">
+                    <?php if ($periods && $periods[0]['is_active']): ?>
+                        <?php
+                        $currentPeriod = $item
+                            ? $item['tahun_akademik'] . ' ' . $item['semester_akademik']
+                            : ($periods[0]['is_active'] ? $periods[0]['academic_year'] . ' ' . $periods[0]['semester'] : '');
+                        ?>
+                        <select id="academic-period" name="academic_period" class="form-control" required style="height: 42px;">
+                            <option value="">Pilih periode</option>
+                            <?php foreach ($periods as $period): ?>
+                                <?php $label = $period['academic_year'] . ' ' . $period['semester']; ?>
+                                <option value="<?= e($label) ?>" <?= $currentPeriod === $label ? 'selected' : '' ?>>
+                                    <?= e($label) ?><?= $period['is_active'] ? ' · Aktif di OBE' : '' ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    <?php else: ?>
+                        <input id="academic-period" name="tahun_akademik" class="form-control" placeholder="Contoh 2026/2027" required
+                            value="<?= e($item['tahun_akademik'] ?? ($periods[0]['academic_year'] ?? '')) ?>">
+                        <label for="academic-semester" class="form-label">Semester</label>
+                        <select id="academic-semester" name="semester_akademik" class="form-control">
+                            <option value="Ganjil">Ganjil</option>
+                            <option value="Genap" <?= ($item['semester_akademik'] ?? '') === 'Genap' ? 'selected' : '' ?>>Genap</option>
+                        </select>
+                    <?php endif; ?>
                 </div>
 
                 <div>

@@ -70,7 +70,47 @@ function flash(string $key, ?string $message = null)
 
 function user(): ?array
 {
+    static $checked = false;
+    if (!$checked && isset($_SESSION['user'])) {
+        $checked = true;
+        $previous = $_SESSION['user'];
+        $account = (new User())->findAccount((int)$previous['id']);
+        if (!$account || $account['status'] !== 'aktif') {
+            unset($_SESSION['user'], $_SESSION['account_csrf']);
+            return null;
+        }
+        $session = User::sessionData($account);
+        if (isset($previous['password_version']) && $previous['password_version'] !== $session['password_version']) {
+            unset($_SESSION['user'], $_SESSION['account_csrf']);
+            return null;
+        }
+        $_SESSION['user'] = $session;
+    }
     return $_SESSION['user'] ?? null;
+}
+
+function account_csrf_token(): string
+{
+    return $_SESSION['account_csrf'] ??= bin2hex(random_bytes(32));
+}
+
+function require_account_csrf(): void
+{
+    $provided = $_POST['csrf_token'] ?? null;
+    if (!is_string($provided) || !hash_equals(account_csrf_token(), $provided)) {
+        http_response_code(403);
+        exit('Token formulir tidak valid. Muat ulang halaman dan coba lagi.');
+    }
+}
+
+function account_role_label(string $role): string
+{
+    return match ($role) {
+        'admin' => 'Admin',
+        'operator_prodi' => 'Operator Prodi',
+        'viewer' => 'Viewer',
+        default => $role,
+    };
 }
 
 function has_role(array $roles): bool

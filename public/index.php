@@ -1,5 +1,10 @@
 <?php
-session_start();
+session_start([
+    'cookie_httponly' => true,
+    'cookie_samesite' => 'Lax',
+    'cookie_secure' => getenv('APP_COOKIE_SECURE') === '1'
+        || (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
+]);
 
 require __DIR__ . '/../app/helpers/functions.php';
 date_default_timezone_set(config_app('timezone', 'Asia/Jakarta'));

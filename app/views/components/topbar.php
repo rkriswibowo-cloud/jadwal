@@ -50,6 +50,9 @@ if ($currentUser && !empty($currentUser['name'])) {
                 <a href="<?= url('dashboard') ?>" class="user-pill-menu-item">
                     <i class="fa-solid fa-chart-line"></i> Dashboard
                 </a>
+                <a href="<?= e(url('profil')) ?>" class="user-pill-menu-item">
+                    <i class="fa-solid fa-id-card" aria-hidden="true"></i> Profil Saya
+                </a>
                 <a href="<?= url('jadwal') ?>" class="user-pill-menu-item">
                     <i class="fa-solid fa-calendar-days"></i> Kelola Jadwal
                 </a>

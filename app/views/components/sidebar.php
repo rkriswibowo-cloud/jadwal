@@ -8,6 +8,10 @@ $isMasterActive = active_menu('ruang')
     || active_menu('jam');
 
 $isJadwalActive = active_menu('jadwal');
+$activeAcademicPeriod = (new AcademicPeriod())->active();
+$activeAcademicLabel = $activeAcademicPeriod
+    ? $activeAcademicPeriod['academic_year'] . ' ' . $activeAcademicPeriod['semester']
+    : 'Periode belum disinkronkan';
 ?>
 <aside class="sidebar" id="appSidebar">
     <!-- Search Bar with '/' Shortcut -->
@@ -19,15 +23,15 @@ $isJadwalActive = active_menu('jadwal');
 
     <!-- Info Pill: Semester / Sistem Berjalan (Responsive) -->
     <div class="sidebar-branch-pill-wrapper" id="branchPillWrapper">
-        <div class="sidebar-branch-pill" title="Sistem Penjadwalan Ruang Kuliah - Semester Aktif 2025/2026">
+        <div class="sidebar-branch-pill" title="<?= e($activeAcademicLabel) ?>">
             <span class="branch-pill-left">
                 <i class="fa-solid fa-calendar-check"></i>
-                <span id="activeSemesterText">TA 2025/2026</span>
+                <span id="activeSemesterText"><?= e($activeAcademicLabel) ?></span>
             </span>
-            <span class="branch-pill-badge">
+            <?php if ($activeAcademicPeriod): ?><span class="branch-pill-badge">
                 <span class="badge-dot"></span>
                 <span>Aktif</span>
-            </span>
+            </span><?php endif; ?>
         </div>
     </div>
 
@@ -145,6 +149,34 @@ $isJadwalActive = active_menu('jadwal');
                         <a href="<?= url('jadwal/cetak-dosen') ?>" class="sidebar-link <?= active_menu('jadwal/cetak-dosen') ?>" title="Cetak Jadwal Dosen">
                             <i class="fa-solid fa-chalkboard-user"></i>
                             <span>Cetak Jadwal Dosen</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="sidebar-group always-open expanded" data-group="akun">
+            <div class="sidebar-section-title">
+                <i class="fa-solid fa-user-circle group-icon" aria-hidden="true"></i>
+                <span>AKUN</span>
+            </div>
+            <div class="sidebar-group-content">
+                <ul class="sidebar-nav">
+                    <?php if (has_role(['admin'])): ?>
+                        <li class="sidebar-nav-item <?= active_menu('pengguna') ?>" data-label="manajemen pengguna akun peran akses">
+                            <a href="<?= e(url('pengguna')) ?>" class="sidebar-link <?= active_menu('pengguna') ?>" title="Manajemen Pengguna">
+                                <i class="fa-solid fa-users-gear" aria-hidden="true"></i><span>Manajemen Pengguna</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-nav-item <?= active_menu('periode-akademik') ?>" data-label="periode akademik tahun ajaran semester obe">
+                            <a href="<?= e(url('periode-akademik')) ?>" class="sidebar-link <?= active_menu('periode-akademik') ?>">
+                                <i class="fa-solid fa-calendar-check" aria-hidden="true"></i><span>Periode Akademik</span>
+                            </a>
+                        </li>
+                    <?php endif; ?>
+                    <li class="sidebar-nav-item <?= active_menu('profil') ?>" data-label="profil saya email akun kata sandi">
+                        <a href="<?= e(url('profil')) ?>" class="sidebar-link <?= active_menu('profil') ?>" title="Profil Saya">
+                            <i class="fa-solid fa-id-card" aria-hidden="true"></i><span>Profil Saya</span>
                         </a>
                     </li>
                 </ul>
